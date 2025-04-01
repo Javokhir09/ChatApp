@@ -3,15 +3,15 @@ import { io } from "socket.io-client"
 import { SendIcon } from "lucide-react"
 import "./App.css"
 
-const socket = io("http://localhost:3000")
+const socket = io("https://chatapp-qmfd.onrender.com")
 
 function App() {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [joined, setJoined] = useState(false);
-
-  const colors = ["red", "blue", "black", "yellow", "green", "orange", "brown", "pink"]
+  const SendSound = new Audio("/send.mp3");
+  const JoinSound = new Audio("/join.mp3");
 
   useEffect(() => {
     socket.on("message", (data) => {
@@ -23,7 +23,8 @@ function App() {
 
   const joinChat = () => {
     if (name.trim()) {
-      socket.emit("join", name)
+      socket.emit("join", name);
+      JoinSound.play();
       setJoined(true);
     } else {alert("Iltimos ismingizni kiriting!")}
   };
@@ -31,8 +32,15 @@ function App() {
   const sendMessage = () => {
     if (message.trim()) {
       socket.emit("sendMessage", message);
+      SendSound.play();
       setMessage("");
     }
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      sendMessage();
+    };
   };
 
   return (
@@ -55,7 +63,7 @@ function App() {
               <div className={`message ${msg.user === name ? "own-message" : ""}`} key={index}>
                 <p className="avatar">{msg.user ? msg.user.slice(0, 1) : "?"}</p>
                 <p className="content">
-                  <strong>{msg.user}</strong>
+                  <span className="name">{msg.user ? msg.user : "?"}</span>
                   {msg.text}
                 </p>
               </div>
@@ -63,7 +71,13 @@ function App() {
           </div>
           
           <div className="send-message">
-            <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Xabar yuboring..." />
+            <input 
+              type="text" 
+              value={message} 
+              onChange={(e) => setMessage(e.target.value)} 
+              placeholder="Xabar yuboring..."
+              onKeyDown={handleKeyDown}
+            />
             <button onClick={sendMessage}><SendIcon /></button>
           </div>
         </div>

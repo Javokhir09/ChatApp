@@ -24,7 +24,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    io.emit("message", { user: "Server", text: `${socket.username} chatni tark etdi`})
+    if (socket.username) {
+      io.emit("message", { user: "Server", text: `${socket.username} chatni tark etdi`})
+    } else {}
   });
 });
 
